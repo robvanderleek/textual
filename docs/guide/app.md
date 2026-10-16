@@ -44,11 +44,6 @@ Inline apps are useful for tools that integrate closely with the typical workflo
 
 To run an app in inline mode set the `inline` parameter to `True` when you call [App.run()][textual.app.App.run]. See [Style Inline Apps](../how-to/style-inline-apps.md) for how to apply additional styles to inline apps.
 
-!!! note
-
-    Inline mode is not currently supported on Windows.
-
-
 #### ANSI colors
 
 !!! tip "Added in version 0.80.0"
