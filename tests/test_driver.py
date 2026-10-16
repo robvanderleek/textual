@@ -1,5 +1,7 @@
+import pytest
+
 from textual import on
-from textual.app import App
+from textual.app import WINDOWS, App
 from textual.events import Click, MouseDown, MouseUp
 from textual.widgets import Button
 
@@ -125,3 +127,14 @@ async def test_driver_mouse_down_drag_outside_widget_up_click():
         )
         await pilot.pause()
         assert len(app.messages) == 0
+
+
+@pytest.mark.skipif(not WINDOWS, reason="Requires Windows")
+def test_build_driver_inline_windows():
+    """Inline mode should use the Windows inline driver on Windows."""
+    from textual.drivers.windows_inline_driver import WindowsInlineDriver
+
+    app = App()
+    driver = app._build_driver(headless=False, inline=True, mouse=True, size=None)
+    assert isinstance(driver, WindowsInlineDriver)
+    assert driver.is_inline

@@ -155,15 +155,19 @@ def get_console_mode(file: IO) -> int:
     return mode.value
 
 
-def enable_application_mode() -> Callable[[], None]:
+def enable_application_mode(output: IO | None = None) -> Callable[[], None]:
     """Enable application mode.
+
+    Args:
+        output: The output file to enable virtual terminal processing on,
+            or `None` for stdout.
 
     Returns:
         A callable that will restore terminal to previous state.
     """
 
     terminal_in = sys.__stdin__
-    terminal_out = sys.__stdout__
+    terminal_out = sys.__stdout__ if output is None else output
 
     current_console_mode_in = get_console_mode(terminal_in)
     current_console_mode_out = get_console_mode(terminal_out)
@@ -218,11 +222,22 @@ class EventMonitor(threading.Thread):
         app: App,
         exit_event: threading.Event,
         process_event: Callable[[Event], None],
+        on_resize: Callable[[], None] | None = None,
     ) -> None:
+        """
+        Args:
+            loop: The event loop running the app.
+            app: The App instance.
+            exit_event: Event set to stop the thread.
+            process_event: Callable that processes input events.
+            on_resize: Optional callable to handle a resize, in place of
+                posting the console buffer size.
+        """
         self.loop = loop
         self.app = app
         self.exit_event = exit_event
         self.process_event = process_event
+        self.on_resize = on_resize
         super().__init__(name="textual-input")
 
     def run(self) -> None:
@@ -292,7 +307,10 @@ class EventMonitor(threading.Thread):
                         self.process_event(event)
                 if new_size is not None:
                     # Process changed size
-                    self.on_size_change(*new_size)
+                    if self.on_resize is not None:
+                        self.on_resize()
+                    else:
+                        self.on_size_change(*new_size)
 
         except Exception as error:
             self.app.log.error("EVENT MONITOR ERROR", error)

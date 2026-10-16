@@ -3335,10 +3335,15 @@ class App(Generic[ReturnType], DOMNode):
             from textual.drivers.headless_driver import HeadlessDriver
 
             driver_class = HeadlessDriver
-        elif inline and not WINDOWS:
-            from textual.drivers.linux_inline_driver import LinuxInlineDriver
+        elif inline:
+            if WINDOWS:
+                from textual.drivers.windows_inline_driver import WindowsInlineDriver
 
-            driver_class = LinuxInlineDriver
+                driver_class = WindowsInlineDriver
+            else:
+                from textual.drivers.linux_inline_driver import LinuxInlineDriver
+
+                driver_class = LinuxInlineDriver
         else:
             driver_class = self.driver_class
 
